@@ -1,11 +1,10 @@
 import java.io.*;
-import java.util.Scanner;
 
-public class Basket {
+public class Basket implements Serializable {
     protected String[] products;
     protected int[] prices;
     protected int[] basket = new int[3];
-    protected File file = new File("basket.txt");
+    protected File file = new File("basket.bin");
 
     public Basket() {
         this.products = new String[]{"Хлеб", "Молоко", "Масло"};
@@ -41,36 +40,17 @@ public class Basket {
         return file;
     }
 
-    public void saveTxt(File textFile) throws IOException {
-        try (PrintWriter writer = new PrintWriter(textFile)) {
-            for (String product : products) {
-                writer.print(product + " ");
-            }
-            writer.print("\n");
-            for (int price : prices) {
-                writer.print(price + " ");
-            }
-            writer.print("\n");
-            for (int i : basket) {
-                writer.print(i + " ");
-            }
+    public void saveBin(File file) throws IOException {
+        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file))) {
+            out.writeObject(new Basket(products, prices, basket));
         }
     }
 
-    public static Basket loadFromTxtFile(File textFile) throws Exception {
-        try (InputStream ins = new FileInputStream(textFile)) {
-            Scanner scanner = new Scanner(ins);
-            String[] products = scanner.nextLine().trim().split(" ");
-            String[] pricesS = scanner.nextLine().trim().split(" ");
-            int[] prices = new int[pricesS.length];
-            for (int i = 0; i < pricesS.length; i++) {
-                prices[i] = Integer.parseInt(pricesS[i]);
-            }
-            String[] basketS = scanner.nextLine().trim().split(" ");
-            int[] basket = new int[basketS.length];
-            for (int i = 0; i < basketS.length; i++)
-                basket[i] = Integer.parseInt(basketS[i]);
-            return new Basket(products, prices, basket);
+    public static Basket loadFromBinFile(File file) throws Exception {
+        Basket basket = null;
+        try (ObjectInputStream ins = new ObjectInputStream (new FileInputStream(file))) {
+            basket = (Basket) ins.readObject();
+            return basket;
         }
     }
 
